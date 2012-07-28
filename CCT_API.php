@@ -7,16 +7,20 @@
 /**
  *
  *
- * @package WP_Scrapbook
+ * @package CCT_API
  * @version 1.0
  */
 /*
-Plugin Name: Custom Computer Tools API plugin
-Plugin URI: http://www.customct.com/API/
-Description:  This plugin is for creating custom API for your website using WordPress. Do more trying to get information form the database yourself for your web API. Just use WordPress PHP commands and create your very own API. Can also be used to make custom web pages with no theming. Great for building a webapp into your website.
+Plugin Name: Custom Computer Tools WebAPI plugin
+Plugin URI: http://www.customct.com/api-page/
+Description:  This plugin is for creating custom API for your website using WordPress. Do more trying to get information form the database yourself for your web API. Just use WordPress PHP commands and create your very own API. Can also be used to make custom web pages with no theming. Great for building a webapp into your website. You can find more useful tools and tutorials at <a href='http://customct.com'>Custom Computer Tools</a>. This plugin was designed on <a href='http://www.customct.com/shop/script-manager/'>Script Manager by Custom Computer Tools</a>.
 Author: Richard Guay
 Version: 1.0
 Author URI: http://customct.com/about/richardguay
+Requires at least: 3.3
+Tested up to: 3.3
+Stable tag: 1.0
+License: GPL 1
 */
 
 //
@@ -65,6 +69,29 @@ class CCT_API {
     // Now, set the RunAPI function to be executed after WordPress is fully loaded.
     //
     add_action('wp_loaded',array(&$cct_API,'RunAPI'));
+
+    //
+    // Set the displaying of the help documentation.
+    //
+    add_action("load-post.php", array(&$cct_API,'plugin_help'));
+
+    //
+    // Set the diabling of the rich editor on API pages.
+    //
+    add_filter('user_can_richedit', array(&$cct_API,'webapiRichEdit'));
+  }
+
+  //
+  // Function:         webapiRichEdit
+  //
+  // Description:      This function is used to stop the rich editor on API pages.
+  //
+  public function webapiRichEdit($c) {
+    global $post_type;
+
+    if ('api' == $post_type)
+        return false;
+    return $c;
   }
 
   //
@@ -87,6 +114,8 @@ class CCT_API {
           'title',
           'editor'
         ),
+        'hierarchical' => true,
+        'capability_type' => 'page',
         'query_var' => 'APIs',
         'rewrite' => array(
           'slug' => 'API',
@@ -102,18 +131,29 @@ class CCT_API {
           'view_item' => 'View API',
           'search_items' => 'Search APIs',
           'not_found' => 'API not found',
-          'not_found_in_trash' => 'No APIs are in the Trash'
+          'not_found_in_trash' => 'No APIs are in the Trash',
+          'parent_item_colon' => 'Parent API'
         ),
         'menu_icon' => plugins_url( "images", __FILE__ ).'/API.png'
       ) 
     );
   }
 
+  //
+  // Function:          RegisterAPI
+  //
+  // Description: This function is used to register the API post type.
+  //
   public function RunAPI() {
     //
     // Reference global variables that we will use.
     //
     global $wpdb;
+
+    //
+    // Stop WordPress post formatting for these type of post.
+    //
+    $this->StopPostFormating();
 
     //
     // Register the post type.
@@ -165,6 +205,65 @@ class CCT_API {
       //
       exit();
     }
+  }
+
+  //
+  // Function:          StopPostFormating
+  //
+  // Description:       This function is used to stop WordPress form formating posts.
+  //
+  public function StopPostFormating() {
+    remove_filter('the_content', 'wpautop');
+    remove_filter('the_excerpt', 'wpautop');
+  }
+
+  //
+  // Function:          plugin_help
+  //
+  // Description:       This function is for setting up the help files for this plugin.
+  //
+  public function plugin_help() {
+    //
+    // Get the current screen context.
+    //
+    $screen = get_current_screen();
+    if(strcasecmp($screen->post_type,"api") == 0) {
+      //
+      // Stop WordPress post formatting for these type of post.
+      //
+      $this->StopPostFormating();
+
+      //
+      // Set up the help documentation.
+      //
+      $screen->add_help_tab( array(
+         'id'      => 'api-intro',
+         'title'   => 'API Page',
+         'content' => <<<EOT
+<h3>WebAPI Pages</h3>
+<p>The Web API pages are for creating Web based APIs for your Website. Anything in these 
+pages will be interpreted and used as a PHP script. All WordPress functions are usable inside 
+of these pages, but no theme formatting or header generation will be done. This is so you can 
+create JSON code for sending to the requestor, or a totally unique page from the rest of the site. 
+This can be used to create special webapps. Do not use shortcodes as they have been disabled.</p>
+
+<p>If you find that your code is littered with &lt;p&gt;&lt;/p&gt; markings, you will need to turn 
+off WordPress's automatic formatting. There is a <a href='http://www.customct.com/Tutorial/stopping-wordpress-auto-formating/'>tutorial</a> for doing just that.</p>
+
+<p>You can find more documentation for the WebAPI plugin at <a href='http://www.customct.com/documentation/api-page/'>Custom Computer Tools</a>, along 
+with a <a href='http://www.customct.com/documentation/api-page/webapi-faq/'>FAQ sheet</a>, and more <a href='http://www.customct.com/webapi-tutorials/'>tutorials</a>.
+EOT
+       ));
+   
+       //
+       // Set the contents for the sidebar in the help section.
+       //
+       $screen->set_help_sidebar( <<<EOT
+<p>For more great themes, plugins, help files, and tutorials, please visit our web site
+<a href='http://customct.com'>Custom Computer Tools</a>.</p>    
+EOT
+                               );
+     }
   }
 }
 
