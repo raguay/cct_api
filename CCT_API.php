@@ -1,26 +1,16 @@
 <?php
-//
-// File:         CCT_API.php
-//
-// Author:       Richard Guay
-//
-/**
- *
- *
- * @package CCT_API
- * @version 1.0
- */
 /*
 Plugin Name: Custom Computer Tools WebAPI plugin
 Plugin URI: http://www.customct.com/api-page/
-Description:  This plugin is for creating custom API for your website using WordPress. Do more trying to get information form the database yourself for your web API. Just use WordPress PHP commands and create your very own API. Can also be used to make custom web pages with no theming. Great for building a webapp into your website. You can find more useful tools and tutorials at <a href='http://customct.com'>Custom Computer Tools</a>. This plugin was designed on <a href='http://www.customct.com/shop/script-manager/'>Script Manager by Custom Computer Tools</a>.
+Description:  This plugin is for creating custom APIs for your website using WordPress. No more trying to get information form the database yourself for your web API. Just use WordPress PHP commands and create your very own API. Can also be used to make custom web pages with no theming. Great for building a webapp into your website. You can find more useful tools and tutorials at <a href='http://customct.com'>Custom Computer Tools</a>. This plugin was designed on <a href='http://www.customct.com/shop/script-manager/'>Script Manager by Custom Computer Tools</a>.
 Author: Richard Guay
 Version: 1.0
-Author URI: http://customct.com/about/richardguay
+Author URI: http://customct.com/about
 Requires at least: 3.3
 Tested up to: 3.3
 Stable tag: 1.0
-License: GPL 1
+License: GPL1
+Text Domain: cct_api
 */
 
 //
@@ -48,6 +38,33 @@ class CCT_API {
   //                   pagename        Name for the current page.
   //
   public $pagename;
+
+  //
+  // Function:          on_activate
+  //
+  // Description:       This is called on activation of the plugin.
+  //
+  public function on_activate() {
+
+  }
+
+  //
+  // Function:          on_deactivate
+  //
+  // Description:       This is called on deactivation of the plugin.
+  //
+  public function on_deactivate() {
+
+  }
+
+  //
+  // Function:          on_uninstall
+  //
+  // Description:       This is called on uninstall of the plugin.
+  //
+  public function on_uninstall() {
+
+  }
 
   //
   // Function:          init
@@ -112,11 +129,13 @@ class CCT_API {
         'public'=> true,
         'supports' => array(
           'title',
-          'editor'
+          'editor',
+          'page-attributes'         // This is required to get hierachical to work!
         ),
         'hierarchical' => true,
         'capability_type' => 'page',
         'query_var' => 'APIs',
+        'permalink_epmask' => EP_PERMALINK,
         'rewrite' => array(
           'slug' => 'API',
           'with_front' => false
@@ -132,7 +151,7 @@ class CCT_API {
           'search_items' => 'Search APIs',
           'not_found' => 'API not found',
           'not_found_in_trash' => 'No APIs are in the Trash',
-          'parent_item_colon' => 'Parent API'
+          'parent' => 'Parent API'
         ),
         'menu_icon' => plugins_url( "images", __FILE__ ).'/API.png'
       ) 
@@ -251,7 +270,7 @@ This can be used to create special webapps. Do not use shortcodes as they have b
 off WordPress's automatic formatting. There is a <a href='http://www.customct.com/Tutorial/stopping-wordpress-auto-formating/'>tutorial</a> for doing just that.</p>
 
 <p>You can find more documentation for the WebAPI plugin at <a href='http://www.customct.com/documentation/api-page/'>Custom Computer Tools</a>, along 
-with a <a href='http://www.customct.com/documentation/api-page/webapi-faq/'>FAQ sheet</a>, and more <a href='http://www.customct.com/webapi-tutorials/'>tutorials</a>.
+with a <a href='http://www.customct.com/forum/web-api/'>forum for sharing ideas</a>, <a href='http://www.customct.com/documentation/api-page/webapi-faq/'>a FAQ sheet</a>, and more <a href='http://www.customct.com/webapi-tutorials/'>tutorials</a>.
 EOT
        ));
    
@@ -293,6 +312,13 @@ if ( is_admin() ) {
   //
   $cct_API = new CCT_API();
 }
+
+//
+// Register the different hooks.
+//
+register_activation_hook( __FILE__, array( &$cct_API, 'on_activate' ) );
+register_deactivation_hook( __FILE__, array( &$cct_API, 'on_deactivate' ) );
+register_uninstall_hook( __FILE__, array( &$cct_API, 'on_uninstall' ) );
 
 //
 // Now, Initialize the class variable.
